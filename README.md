@@ -26,3 +26,4 @@ Schéma <a name="archi"></a>
 Documentation <a name="doc"></a>
 
 1. Redis et AWS : https://redis.com/blog/serverless-development-with-aws-lambda-and-redis-enterprise-cloud/
+2. Redis et TF: https://developer.redis.com/create/aws/terraform/
