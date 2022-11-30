@@ -9,3 +9,6 @@ Initialiser le projet
 
 
 !!!!!!!!!!! ATTENTION ne pas appliquer de terraform apply sur ce projet pour l'instant !!!!!!!!!!
+
+
+![alt text](Projet.png)
