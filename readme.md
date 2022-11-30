@@ -13,8 +13,9 @@ Initialiser le projet <a name="init"></a>
 4. terraform init
 
 
-
-## <font color="red"> !!!!!!!!!!! ATTENTION ne pas appliquer de terraform apply sur ce projet pour l'instant !!!!!!!!!! </font>
+```diff
+- !!!!!!!!!!! ATTENTION ne pas appliquer de terraform apply sur ce projet pour l'instant
+```
 
 Schéma <a name="archi"></a>
 
