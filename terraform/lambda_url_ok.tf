@@ -4,7 +4,3 @@ resource "aws_lambda_function" "is_url_ok" {
   role          = ""
 }
 
-
-
-
-
