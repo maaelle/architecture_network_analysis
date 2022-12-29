@@ -8,12 +8,12 @@
     2. [The prediction](#the-prediction)
     3. [Saving old Predictions](#saving-old-predictions)
     4. [Refitting our AI](#refitting-our-ai)
-3. [Documentation](#documentation)
+3. [links](#links)
 
 ## Initialization
 
-first, you need to clone this git by typing in the terminal
-`git clone https://github.com/maaelle/architecture_network_analysis.git`.
+First, you need to clone this git by typing in the terminal
+`git clone https://github.com/maaelle/architecture_network_analysis.git`
 
 Then, you have to register to AWS CLI, so type in the terminal `aws configure` and put your IAM key.
 
@@ -29,7 +29,7 @@ Once you finished to register to AWS CLI, you can type in the terminal `terrafor
 ### Goal of our Project
 
 The goal of our project is to protect the final user.
-So our project could be simplified by this bloc-schema below.
+So our project could be simplified by this bloc-schema below :
 
 ```mermaid
 graph LR
@@ -119,7 +119,39 @@ network packets from unknown URL.
 |  11  | It refits the AI with data from bloc 10                                                                                                           |
 |  12  | It store the AI used for predictions and refitting.                                                                                               |
 
-## Documentation
+## Links
 
-1. Redis et AWS : https://redis.com/blog/serverless-development-with-aws-lambda-and-redis-enterprise-cloud/
-2. Redis et TF: https://developer.redis.com/create/aws/terraform/
+### AWS
+
+1. [AWS lambda](https://aws.amazon.com/fr/lambda/)
+2. [AWS SQS](https://aws.amazon.com/fr/sqs/)
+3. [AWS S3](https://aws.amazon.com/fr/s3/)
+4. [AWS dynamodb](https://aws.amazon.com/fr/dynamodb/)
+5. [AWS EC2](https://aws.amazon.com/fr/ec2/)
+
+### Databases
+1. [Mongodb](https://www.mongodb.com/fr-fr)
+2. [AWS dynamodb](https://aws.amazon.com/fr/dynamodb/)
+
+### Terraform
+1. [Terraform](https://www.terraform.io/)
+
+### Contributors
+
+Clément Reiffers:
+- @clementreiffers
+- <https://github.com/clementreiffers>
+
+Maelle Marcelin:
+- @maaelle
+- <https://github.com/maaelle>
+
+Camille Bayon de Noyer:
+- @Kamomille
+- <https://github.com/kamomille>
+
+Sonia Moghraoui:
+- @SoniaMogh
+- <https://github.com/SoniaMogh>
+
+[![GitHub contributors](https://contrib.rocks/image?repo=maaelle/architecture_network_analysis)](https://github.com/maaelle/architecture_network_analysis/graphs/contributors) 
