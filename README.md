@@ -1,5 +1,11 @@
 # architecture-cloud
 
+This GitHub Repository describes how we want to protect all users from navigating on internet.
+So we decided to create a DNS server which works thanks to an AWS server.
+
+This Readme explains how to create this server using terraform, and how it works and why we decided this configuration.
+
+
 ## Overview
 
 1. [Initialization](#initialization)
@@ -48,7 +54,7 @@ If the URL is malicious, so we send a warning to the user, otherwise we permit t
 
 Our first idea was the prediction of all URL that all user wanted.
 It could work but all networks catching and predictions cost a lot of execution time, so it harms the final user
-who just wanted to be safe. We want the speediest system.
+who just wanted to be safe. We want the fastest system.
 So we searched a solution to resolve this problem.
 
 ```mermaid 
@@ -104,20 +110,20 @@ network packets from unknown URL.
 
 ![detailed-description](docs/detailed-description.png)
 
-| bloc | Description                                                                                                                                       |
-|:----:|:--------------------------------------------------------------------------------------------------------------------------------------------------|
-|  1   | All our architecture is in an AWS EC2, we will use all our AWS Lambda inside of it                                                                |
-|  2   | We recuperate the target URL and verify if it has been rejected in the past. This lambda send a boolean                                           |
-|  3   | It represents our reject list in mongodb. it's outside the EC2 because it's hosted by mongo atlas                                                 |
-|  4   | It send a warning if the bloc 2 send "false" otherwise it send the target URL to the user                                                         |
-|  5   | This is an AWS SQS of all URL which aren't in the reject list                                                                                     |
-|  6   | This lambda verify if the URL is in the accepted list                                                                                             |
-|  7   | This bloc represents the AWS dynamodb used to store all accepted URL.                                                                             |
-|  8   | This lambda listen the network and will compute a GET HTTP to the target URL. It catches network packets                                          |
-|  9   | This lambda is our AI. It predicts the network packets received from bloc 8, predicts the kind of app and fills reject/accept list in consequence |
-|  10  | This bloc represents cache used to refit our AI. It will be empty once the refitting finished.                                                    |
-|  11  | It refits the AI with data from bloc 10                                                                                                           |
-|  12  | It store the AI used for predictions and refitting.                                                                                               |
+| bloc | Description                                                                                                                                     |
+|:----:|:------------------------------------------------------------------------------------------------------------------------------------------------|
+|  1   | All our architecture is in an AWS EC2, we will use all our AWS Lambda inside of it                                                              |
+|  2   | We get the target URL and verify if it has been rejected in the past. This lambda send a boolean                                                |
+|  3   | It represents our reject list in mongodb. it's outside the EC2 because it's hosted by mongo atlas                                               |
+|  4   | It send a warning if the bloc 2 send "false" otherwise it send the target URL to the user                                                       |
+|  5   | This is an AWS SQS of all URL which aren't in the reject list                                                                                   |
+|  6   | This lambda verify if the URL is in the accepted list                                                                                           |
+|  7   | This bloc represents the AWS dynamodb used to store all accepted URL.                                                                           |
+|  8   | This lambda listen the network and will compute a GET HTTP to the target URL. It catches network packets                                        |
+|  9   | This lambda is our AI. It predicts the network packets received from bloc 8, predicts the kind of app and fills reject/accept db in consequence |
+|  10  | This bloc represents cache used to refit our AI. It will be empty once the refitting finished                                                   |
+|  11  | It refits the AI with data from bloc 10                                                                                                         |
+|  12  | It store the AI used for predictions and refitting.                                                                                             |
 
 ## Links
 
