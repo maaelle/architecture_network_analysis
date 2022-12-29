@@ -22,6 +22,8 @@ Once you finished to register to AWS CLI, you can type in the terminal `terrafor
 
 ## Architecture
 
+The AI is in this [GitHub repository](https://github.com/clementreiffers/network_analysis).
+
 ### Goal of our Project
 
 The goal of our project is to protect the final user. 
@@ -62,9 +64,32 @@ So we searched a solution to get to this problem.
 
 ### Saving old Predictions
 
-So we add 2 databases to this architecture :
+So we add 2 databases to this architecture as below:
 
 ![saving old predictions](docs/saving-old-predictions.png)
+
+This 2 databases serve to save to kind of data :
+- the first one serve to store all rejected URL
+- the second serve to store all accepted URL
+
+This architecture permits to not predict 2 times the same URL, the user isn't harm by an execution cost provided by 
+the prediction and the network catching.
+
+There is 2 ways for the user :
+- If a URL is in the reject list, the user receive a warning.
+- If a URL is not in the reject list, so the URL will fill an AWS SQS and will be verified by the AI in order to fill 
+the databases, there is 2 ways for this URL:
+  - If it has been accepted before, we analyse the next URL in the AWS SQS
+  - If it has not been accepted before, so the URL is totally unknown, so it pass in the 2 lambdas seen before, so 
+  the network catching and the prediction. If the AI predicted this URL as a bad one, it fills the reject list otherwise
+  it fills the accepted list.
+
+This architecture save a lot of time for the user, but we need to improve continually our AI, we need refitting, so we 
+searched ways to improve this AI.
+
+### Refitting of our AI
+
+
 
 
 
