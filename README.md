@@ -23,8 +23,8 @@ Once you finished to register to AWS CLI, you can type in the terminal `terrafor
 > don't use `terraform apply` for now because it's not finished
 
 ## How did we design our architecture?
-
-The AI is in this [GitHub repository](https://github.com/clementreiffers/network_analysis).
+> **Note**
+> The AI is available in this [GitHub repository](https://github.com/clementreiffers/network_analysis).
 
 ### Goal of our Project
 
