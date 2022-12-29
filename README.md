@@ -2,8 +2,12 @@
 
 ## Overview
  1. [Initialization](#initialization)
- 2. [Architecture](#Architecture)
- 3. [Documentation](#Documentation)
+ 2. [How did we design our architecture?](#how-did-we-design-our-architecture)
+    1. [Goal of our Project](#goal-of-our-project)
+    2. [The prediction](#the-prediction)
+    3. [Saving old Predictions](#saving-old-predictions)
+    4. [Refitting our AI](#refitting-our-ai)
+ 3. [Documentation](#documentation)
 
 
 
@@ -20,7 +24,7 @@ Once you finished to register to AWS CLI, you can type in the terminal `terrafor
 > don't use `terraform apply` for now because it's not finished
 
 
-## Architecture
+## How did we design our architecture?
 
 The AI is in this [GitHub repository](https://github.com/clementreiffers/network_analysis).
 
@@ -81,15 +85,19 @@ There is 2 ways for the user :
 the databases, there is 2 ways for this URL:
   - If it has been accepted before, we analyse the next URL in the AWS SQS
   - If it has not been accepted before, so the URL is totally unknown, so it pass in the 2 lambdas seen before, so 
-  the network catching and the prediction. If the AI predicted this URL as a bad one, it fills the reject list otherwise
-  it fills the accepted list.
+  the network catching and the prediction. If the AI predicted this URL as a bad one, it fills the reject list 
+  otherwise it fills the accepted list.
 
 This architecture save a lot of time for the user, but we need to improve continually our AI, we need refitting, so we 
 searched ways to improve this AI.
 
-### Refitting of our AI
+### Refitting our AI
 
+To refitting the AI, we created this architecture below:
+![refitting AI](docs/refitting-ai.png)
 
+The AI will be refitted all along the utilization of the DNS. For that, we added an AWS dynamodb, which stores all
+network packets from unknown URL.
 
 
 
