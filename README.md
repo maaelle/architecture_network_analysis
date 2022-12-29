@@ -62,7 +62,7 @@ So we searched a solution to get to this problem.
 
 ### Saving old Predictions
 
-So we had 2 databases to this architecture :
+So we add 2 databases to this architecture :
 
 ![saving old predictions](docs/saving-old-predictions.png)
 
