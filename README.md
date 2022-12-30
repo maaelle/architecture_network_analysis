@@ -60,8 +60,6 @@ a1 -.-> |GET| d1
 a2 -.-> |GET| d2
 a5 -.-> |PUT| d1
 a5 -.-> |PUT| d2
-
-click a1 href "https://google.com" _blank
 ```
 
 ## Installation
@@ -155,6 +153,84 @@ To refitting the AI, we created this architecture below:
 The AI will be refitted all along the utilization of the DNS. For that, we added an AWS dynamodb, which stores all
 network packets from unknown URL.
 
+### complete arch
+
+
+```mermaid
+flowchart LR
+
+l1[is-url-rejected]
+l2[warning-or-target]
+l3[url-accepted]
+l4[catching-network-packets]
+l5[prediction]
+l6[refit]
+l7[fill db]
+
+style l1 fill:#D86613,color:white
+style l2 fill:#D86613,color:white
+style l3 fill:#D86613,color:white
+style l4 fill:#D86613,color:white
+style l5 fill:#D86613,color:white
+style l6 fill:#D86613,color:white
+style l7 fill:#D86613,color:white
+
+s1[sqs1]
+s2[sqs2]
+s3[sqs3]
+s4[sqs4]
+
+style s1 fill:yellow,color:black
+style s2 fill:yellow,color:black
+style s3 fill:yellow,color:black
+style s4 fill:yellow,color:black
+
+d1[(reject list)]
+d2[(accept list)]
+
+style d1 fill:#92D050,color:black
+style d2 fill:#00B0F0,color:black
+
+subgraph DNS
+    subgraph app1
+        l1 --> |bool|l2
+    end
+    
+    app1 --> |url| s1 --> app2
+    
+    subgraph app2
+        l3 --> |url| l4
+    end
+    
+    app2 --> |network-packet & url| s2 --> app3 
+     
+    subgraph app3
+        l5
+    end   
+    
+    app3 --> |network-packet & url & prediction| s3 --> app4
+    
+    subgraph app4
+        l6
+    end 
+    
+    app4 --> |url & prediction| s4 --> app5
+    
+    subgraph app5
+        l7
+    end
+    
+    app5 -.-> |PUT| d1 & d2
+    app1 -.-> |GET| d1
+    app2 -.-> |GET| d2   
+end
+
+
+user ==> |url| app1
+app1 ==> |url| user
+
+style DNS fill:transparent
+```
 
 ### Detailed description of our architecture
 
