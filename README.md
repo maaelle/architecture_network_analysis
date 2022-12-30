@@ -77,6 +77,16 @@ style a4 fill:#D86613,color:white
 style a5 fill:#D86613,color:white
 ```
 
+
+| Apps | Description                                                                                     |
+|:----:|:------------------------------------------------------------------------------------------------|
+|  1   | if the target url have never been rejected, the user receive it, otherwise he receive a warning |
+|  2   | if the url have never been either rejected or accepted, it catch the network packet             |
+|  3   | it predicts network packets                                                                     |
+|  4   | it refits the ai with new data                                                                  |
+|  5   | it fills databases being careful if the website is malicious or not                             |
+
+
 ## Installation
 
 First, you need to clone this git by typing in the terminal
