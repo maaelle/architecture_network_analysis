@@ -10,6 +10,10 @@ This Readme explains how to create this server using terraform, and how it works
 
 1. [Installation](#installation)
 2. [Architecture](#architecture)
+    1. [General Schema](#general-schema)
+    2. [Explication of the general schema](#explication-of-the-general-schema)
+        1. [Apps](#apps)
+        2. [SQS](#sqs)
 3. [How did we design our architecture?](#how-did-we-design-our-architecture)
     1. [Goal of our Project](#goal-of-our-project)
     2. [The prediction](#the-prediction)
@@ -19,9 +23,11 @@ This Readme explains how to create this server using terraform, and how it works
 
 ## Architecture
 
-Our final architecture can be resumed into 5 different apps connected to 2 databases:
-if you want details about how we design our system, see the topic 
+Our final architecture can be resumed into 5 different apps connected to 2 databases.
+If you want any details about how we design our system, see the topic 
 [How did we design our architecture?](#how-did-we-design-our-architecture).
+
+### General schema
 
 ```mermaid
 flowchart TB
@@ -77,14 +83,26 @@ style a4 fill:#D86613,color:white
 style a5 fill:#D86613,color:white
 ```
 
+### Explication of the general schema
+
+#### Apps
 
 | Apps | Description                                                                                     |
 |:----:|:------------------------------------------------------------------------------------------------|
 |  1   | if the target url have never been rejected, the user receive it, otherwise he receive a warning |
 |  2   | if the url have never been either rejected or accepted, it catch the network packet             |
-|  3   | it predicts network packets                                                                     |
-|  4   | it refits the ai with new data                                                                  |
+|  3   | it predicts network packets, see the topic [The Prediction](#the-prediction)                    |
+|  4   | it refits the ai with new data, see the topic [Refitting](#refitting-our-ai)                    |
 |  5   | it fills databases being careful if the website is malicious or not                             |
+
+#### SQS
+
+| SQS | Description                                                                                      |
+|:---:|:-------------------------------------------------------------------------------------------------|
+|  1  | it stores all URL which are not presents in the reject list in order to catch their http packets |
+|  2  | it stores all URL with their http packets in order to make a prediction                          |
+|  3  | it stores all URL with their http packets and predictions in order to make a refitting of the AI |
+|  4  | it stores all URL with their predictions in order to fill the both databases                     |
 
 
 ## Installation
