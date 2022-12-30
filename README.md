@@ -151,14 +151,12 @@ flowchart LR
 USR[User]
 L1[Catching network packet]
 L2[Prediction kind of app]
-L3[Is it malicious?]
+L3[Send warning or target url]
 
-USR --> L1
+USR --> |URL| L1
 L1 --> L2
 L2 --> L3
-L3 --> |YES| USR
-L3 --> |No| USR
-
+L3 --> |URL| USR
 ```
 
 
@@ -336,24 +334,6 @@ style DNS fill:transparent
 
 The AI will be refitted all along the utilization of the DNS. For that, we added an AWS dynamodb, which stores all
 network packets from unknown URL.
-
-### Detailed description of our architecture
-
-
-| bloc | Description                                                                                                                                     |
-|:----:|:------------------------------------------------------------------------------------------------------------------------------------------------|
-|  1   | All our architecture is in an AWS EC2, we will use all our AWS Lambda inside of it                                                              |
-|  2   | We get the target URL and verify if it has been rejected in the past. This lambda send a boolean                                                |
-|  3   | It represents our reject list in mongodb. it's outside the EC2 because it's hosted by mongo atlas                                               |
-|  4   | It send a warning if the bloc 2 send "false" otherwise it send the target URL to the user                                                       |
-|  5   | This is an AWS SQS of all URL which aren't in the reject list                                                                                   |
-|  6   | This lambda verify if the URL is in the accepted list                                                                                           |
-|  7   | This bloc represents the AWS dynamodb used to store all accepted URL.                                                                           |
-|  8   | This lambda listen the network and will compute a GET HTTP to the target URL. It catches network packets                                        |
-|  9   | This lambda is our AI. It predicts the network packets received from bloc 8, predicts the kind of app and fills reject/accept db in consequence |
-|  10  | This bloc represents cache used to refit our AI. It will be empty once the refitting finished                                                   |
-|  11  | It refits the AI with data from bloc 10                                                                                                         |
-|  12  | It store the AI used for predictions and refitting.                                                                                             |
 
 ## Links
 
