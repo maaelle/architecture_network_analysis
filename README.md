@@ -61,7 +61,7 @@ a2 -.-> |GET| d2
 a5 -.-> |PUT| d1
 a5 -.-> |PUT| d2
 
-click a1 "https://google.com" _blank
+click a1 href "https://google.com" _blank
 ```
 
 ## Installation
