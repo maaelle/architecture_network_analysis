@@ -157,7 +157,7 @@ network packets from unknown URL.
 
 
 ```mermaid
-flowchart LR
+flowchart TB
 
 l1[is-url-rejected]
 l2[warning-or-target]
