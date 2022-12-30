@@ -24,7 +24,7 @@ This Readme explains how to create this server using terraform, and how it works
 ## Architecture
 
 Our final architecture can be resumed into 5 different apps connected to 2 databases.
-If you want any details about how we design our system, see the topic 
+If you want any details about how we designed our system, see the topic 
 [How did we design our architecture?](#how-did-we-design-our-architecture).
 
 ### General schema
@@ -87,13 +87,13 @@ style a5 fill:#D86613,color:white
 
 #### Apps
 
-| Apps | Description                                                                                     |
-|:----:|:------------------------------------------------------------------------------------------------|
-|  1   | if the target url have never been rejected, the user receive it, otherwise he receive a warning |
-|  2   | if the url have never been either rejected or accepted, it catch the network packet             |
-|  3   | it predicts network packets, see the topic [The Prediction](#the-prediction)                    |
-|  4   | it refits the ai with new data, see the topic [Refitting](#refitting-our-ai)                    |
-|  5   | it fills databases being careful if the website is malicious or not                             |
+| Apps | Description                                                                                      |
+|:----:|:-------------------------------------------------------------------------------------------------|
+|  1   | if the target url has never been rejected, the user receives it, otherwise he receives a warning |
+|  2   | if the url has never been either rejected or accepted, it catches the network packet             |
+|  3   | it predicts network packets, see the topic [The Prediction](#the-prediction)                     |
+|  4   | it refits the ai with new data, see the topic [Refitting](#refitting-our-ai)                     |
+|  5   | it fills databases being careful if the website is malicious or not                              |
 
 #### SQS
 
@@ -124,7 +124,7 @@ Once you finished to register to AWS CLI, you can type in the terminal `terrafor
 ### Goal of our Project
 
 The goal of our project is to protect the final user.
-So our project could be simplified by this bloc-schema below :
+So our project could be simplified by this flowchart below :
 
 ```mermaid
 graph LR
@@ -232,23 +232,13 @@ style DNS fill:transparent
 ```
 
 
-This 2 databases serve to save to kind of data :
+This 2 databases serve to save two kind of data :
 
-- the first one serve to store all rejected URL
-- the second serve to store all accepted URL
+- the first one serves to store all rejected URL
+- the second serves to store all accepted URL
 
 This architecture permits to not predict 2 times the same URL, the user isn't harm by an execution cost provided by
 the prediction and the network catching.
-
-There is 2 ways for the user :
-
-- If a URL is in the reject list, the user receive a warning.
-- If a URL is not in the reject list, so the URL will fill an AWS SQS and will be verified by the AI in order to fill
-  the databases, there is 2 ways for this URL:
-    - If it has been accepted before, we analyse the next URL in the AWS SQS
-    - If it has not been accepted before, so the URL is totally unknown, so it pass in the 2 lambdas seen before, so
-      the network catching and the prediction. If the AI predicted this URL as a bad one, it fills the reject list
-      otherwise it fills the accepted list.
 
 This architecture save a lot of time for the user, but we need to improve continually our AI, we need refitting, so we
 searched ways to improve this AI.
