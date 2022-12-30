@@ -8,15 +8,63 @@ This Readme explains how to create this server using terraform, and how it works
 
 ## Overview
 
-1. [Initialization](#initialization)
-2. [How did we design our architecture?](#how-did-we-design-our-architecture)
+1. [Installation](#installation)
+2. [Architecture](#architecture)
+3. [How did we design our architecture?](#how-did-we-design-our-architecture)
     1. [Goal of our Project](#goal-of-our-project)
     2. [The prediction](#the-prediction)
     3. [Saving old Predictions](#saving-old-predictions)
     4. [Refitting our AI](#refitting-our-ai)
-3. [links](#links)
+4. [Links](#links)
 
-## Initialization
+## Architecture
+
+Our final architecture can be resumed into 5 different apps connected to 2 databases:
+if you want details about how we design our system, see the topic 
+[How did we design our architecture?](#how-did-we-design-our-architecture).
+
+```mermaid
+flowchart TB
+
+a1[APP1] 
+a2[APP2] 
+a3[APP3] 
+a4[APP4] 
+a5[APP5]
+
+d1[(Reject List)]
+d2[(Accept List)]
+
+usr[User]
+
+s1([sqs1])
+s2([sqs2])
+s3([sqs3])
+s4([sqs4])
+
+subgraph DNS
+    a1 -->|url| s1
+    s1 -->|url| a2 
+    a2 -->|http-packet & url| s2 
+    s2 -->|http-packet & url| a3 
+    a3 -->|http-packet & url & prediction| s3 
+    s3 -->|http-packet & url & prediction| a4 
+    a4 --> |url & prediction| s4 
+    s4 --> |url & prediction| a5
+end
+
+usr ==> |url| a1
+a1 ==> |url| usr
+
+a1 -.-> |GET| d1
+a2 -.-> |GET| d2
+a5 -.-> |PUT| d1
+a5 -.-> |PUT| d2
+
+click a1 "https://google.com" _blank
+```
+
+## Installation
 
 First, you need to clone this git by typing in the terminal
 `git clone https://github.com/maaelle/architecture_network_analysis.git`
@@ -58,7 +106,7 @@ who just wanted to be safe. We want the fastest system.
 So we searched a solution to resolve this problem.
 
 ```mermaid 
-graph LR
+flowchart LR
 USR[User]
 L1[Catching network packet]
 L2[Prediction kind of app]
@@ -76,6 +124,7 @@ L3 --> |No| USR
 So we add 2 databases to this architecture as below:
 
 ![saving old predictions](docs/saving-old-predictions.png)
+
 
 This 2 databases serve to save to kind of data :
 
@@ -105,6 +154,7 @@ To refitting the AI, we created this architecture below:
 
 The AI will be refitted all along the utilization of the DNS. For that, we added an AWS dynamodb, which stores all
 network packets from unknown URL.
+
 
 ### Detailed description of our architecture
 
