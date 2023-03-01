@@ -38,8 +38,7 @@ DB3[(accepted_url)]
 L1(empty unkown URL db)
 L2(catch TCP/UDP packet)
 L3(predict the kind of app)
-L4(refit the AI)
-L5(fill DB)
+L4(refit the AI and fill db)
 
 USER --> |localhost:53| CLI
 
@@ -47,11 +46,11 @@ CLI --> |url| DB1
 CLI <--> |url| DB2
 L1 <--> |url| DB1
 
-L5 --> |url| DB2
-L5 --> |url| DB3
+L4 --> |url| DB2
+L4 --> |url| DB3
 
 subgraph cloud 
-    L1 --> |url| L2 --> |url & tcp packet| L3 --> |url & tcp & kind| L4 --> |url & kind| L5
+    L1 --> |url| L2 --> |url & tcp packet| L3 --> |url & tcp & kind| L4
 end
 
 subgraph mongo
@@ -68,7 +67,6 @@ style L1 fill:#D86613,color:white,stroke:#D86613
 style L2 fill:#D86613,color:white,stroke:#D86613
 style L3 fill:#D86613,color:white,stroke:#D86613
 style L4 fill:#D86613,color:white,stroke:#D86613
-style L5 fill:#D86613,color:white,stroke:#D86613
 
 style CLI fill:blue,color:white,stroke:blue
 
