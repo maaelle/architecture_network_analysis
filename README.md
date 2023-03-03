@@ -11,9 +11,6 @@ This Readme explains how to create this server using terraform, and how it works
 1. [Installation](#installation)
 2. [Architecture](#architecture)
     1. [General Schema](#general-schema)
-    2. [Explication of the general schema](#explication-of-the-general-schema)
-        1. [Apps](#apps)
-        2. [SQS](#sqs)
 3. [How did we design our architecture?](#how-did-we-design-our-architecture)
     1. [Goal of our Project](#goal-of-our-project)
     2. [The prediction](#the-prediction)
@@ -32,78 +29,69 @@ If you want any details about how we designed our system, see the topic
 ```mermaid
 flowchart TB
 
-a1(APP1) 
-a2(APP2) 
-a3(APP3) 
-a4(APP4) 
-a5(APP5)
+CLI([CLIENT DNS])
 
-d1[(Reject List)]
-d2[(Accept List)]
+DB1[(unknown_url)]
+DB2[(malicious_url)]
+DB3[(accepted_url)]
 
-style d1 fill:#92D050,color:black
-style d2 fill:#00B0F0,color:black
+L1(empty unkown URL db)
+L2(catch TCP/UDP packet)
+L3(predict the kind of app)
+L4(refit the AI and fill db)
 
-usr[User]
+USER --> |localhost:53| CLI
 
-s1([sqs1])
-s2([sqs2])
-s3([sqs3])
-s4([sqs4])
+CLI --> |url| DB1
+CLI <--> |url| DB2
+L1 <--> |url| DB1
 
-style s1 fill:yellow,color:black
-style s2 fill:yellow,color:black
-style s3 fill:yellow,color:black
-style s4 fill:yellow,color:black
+L4 --> |url| DB2
+L4 --> |url| DB3
 
-subgraph DNS
-    a1 -->|url| s1
-    s1 -->|url| a2 
-    a2 -->|http-packet & url| s2 
-    s2 -->|http-packet & url| a3 
-    a3 -->|http-packet & url & prediction| s3 
-    s3 -->|http-packet & url & prediction| a4 
-    a4 --> |url & prediction| s4 
-    s4 --> |url & prediction| a5
+subgraph cloud 
+    L1 --> |url| L2 --> |url & tcp packet| L3 --> |url & tcp & kind| L4
 end
 
-usr ==> |url| a1
-a1 ==> |url| usr
+subgraph mongo
+    DB1
+    DB2
+    DB3
+end
 
-a1 -.-> |GET| d1
-a2 -.-> |GET| d2
-a5 -.-> |PUT| d1
-a5 -.-> |PUT| d2
+style DB1 fill:#92D050,color:black,stroke:black
+style DB2 fill:#92D050,color:black,stroke:black
+style DB3 fill:#92D050,color:black,stroke:black
 
-style DNS fill:transparent
-style a1 fill:#D86613,color:white
-style a2 fill:#D86613,color:white
-style a3 fill:#D86613,color:white
-style a4 fill:#D86613,color:white
-style a5 fill:#D86613,color:white
+style L1 fill:#D86613,color:white,stroke:#D86613
+style L2 fill:#D86613,color:white,stroke:#D86613
+style L3 fill:#D86613,color:white,stroke:#D86613
+style L4 fill:#D86613,color:white,stroke:#D86613
+
+style CLI fill:blue,color:white,stroke:blue
+
+style USER fill:yellow,color:black,stroke:black
 ```
 
-### Explication of the general schema
+the graph above describes how our solution works.
 
-#### Apps
+First we have created a CLI app [hosted here](https://github.com/clementreiffers/dns-server), this app 
+once installed, will ask you which dns server do you want, and if you choose `127.0.0.1`, your entire 
+OS will use this DNS server.
 
-| Apps | Description                                                                                      |
-|:----:|:-------------------------------------------------------------------------------------------------|
-|  1   | if the target url has never been rejected, the user receives it, otherwise he receives a warning |
-|  2   | if the url has never been either rejected or accepted, it catches the network packet             |
-|  3   | it predicts network packets, see the topic [The Prediction](#the-prediction)                     |
-|  4   | it refits the ai with new data, see the topic [Refitting](#refitting-our-ai)                     |
-|  5   | it fills databases being careful if the website is malicious or not                              |
+If the OS use this DNS server, so the CLI app, it will listen which URL you consult and fill databases with it, 
+in respect of RGPD laws. We only recuperate the URLs in order to prevent people from bad URLs using AI.
 
-#### SQS
+the cloud part, is divided into 5 parts.
 
-| SQS | Description                                                                                      |
-|:---:|:-------------------------------------------------------------------------------------------------|
-|  1  | it stores all URL which are not presents in the reject list in order to catch their http packets |
-|  2  | it stores all URL with their http packets in order to make a prediction                          |
-|  3  | it stores all URL with their http packets and predictions in order to make a refitting of the AI |
-|  4  | it stores all URL with their predictions in order to fill the both databases                     |
+The first part is triggered automatically n times per hours, it served only to empty the mongodb database, and 
+then fill an SQS to be processed after.
 
+The second part, catch the TCP packet of the related URL if it is possible and fill an SQS to be analyzed by an AI.
+
+the third part, predicts the kind of app using AI, and the fourth part refit this AI with its prediction.
+
+the final part fill the mongo database with url depending if the url is malicious or not.
 
 ## Installation
 
@@ -324,6 +312,12 @@ style DNS fill:transparent
 
 The AI will be refitted all along the utilization of the DNS. For that, we added an AWS dynamodb, which stores all
 network packets from unknown URL.
+
+## the CLI app
+
+In order to reduce the consumption of resources on cloud and permit all people to have good performance, 
+we decided to create a CLI app, which manages the listening and the management of the user directly in his OS.
+To see how it has been refactoring, see the [General Schema](#general-schema)
 
 ## Links
 
