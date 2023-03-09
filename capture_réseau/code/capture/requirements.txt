@@ -1,0 +1,5 @@
+pyshark
+statistics
+scapy
+boto3
+requests
