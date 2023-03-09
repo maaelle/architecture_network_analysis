@@ -11,10 +11,8 @@ resource "aws_lambda_function" "capture_stat_lambda" {
 }
 
 resource "aws_lambda_event_source_mapping" "event_sqs_capture" {
-  event_source_arn = aws_sqs_queue.sqs_queue_capture.arn
-  enabled          = true
-  function_name    = "${aws_lambda_function.capture_stat_lambda.arn}"
-  batch_size       = 1
+  event_source_arn = aws_sqs_queue.sqs_capture.arn
+  function_name    = aws_lambda_function.capture_stat_lambda.arn
 }
 
 
@@ -31,8 +29,6 @@ resource "aws_lambda_function" "ai_lambda" {
 }
 
 resource "aws_lambda_event_source_mapping" "event_sqs_ia" {
-  event_source_arn = aws_sqs_queue.sqs_queue_ia.arn
-  enabled          = true
-  function_name    = "${aws_lambda_function.ai_lambda.arn}"
-  batch_size       = 1
+  event_source_arn = aws_sqs_queue.sqs_ia.arn
+  function_name    = aws_lambda_function.ai_lambda.arn
 }
