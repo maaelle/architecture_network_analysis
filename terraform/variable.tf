@@ -1,76 +1,60 @@
-# ------------------  utils  ---------------------------
-
 variable "region" {
   default = "eu-west-1"
 }
 
-# ------------------  S3  ---------------------------
-
-variable "s3_user_bucket_name" {
-  description = "Nom du bucket"
+variable "source_dir_lambda" {
+  description = "source dir where we can find the source code of the lambda"
+  default     = "./files/empty_package.zip"
   type        = string
 }
 
-variable "s3_full_access_policy" {
-  description = "Arn of the s3 full access policy"
-  default = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-}
-
-# ------------------ Lambda ---------------------------
-
-variable "data_processing_lambda_lambda_name" {
-  description = "Nom de la lambda"
+variable "handler_empty_unknown_urls" {
+  description = "handler function to take in which file"
+  default     = "main.lambda_handler"
   type        = string
 }
 
-# ------------------ Athena -----------------------------
-
-variable "athena_db_name" {
-  description = "Nom de la db Athena"
+variable "handler_capture" {
+  description = "handler function to take in which file"
+  default     = "captureandstat.lambda_handler"
   type        = string
 }
 
-variable "athena_results_key_bucket_name" {
-  description = "Chemin vers le bucket pour stocker les résultats des requêtes Athena"
+variable "handler_ia" {
+  description = "handler function to take in which file"
+  default     = "predict.lambda_handler"
   type        = string
 }
 
-variable "processed_job_offers_key_name" {
-  description = "Chemin menant aux offres d'emploies traitées par la lambda"
+variable "handler_refit" {
+  description = "handler function to take in which file"
+  default     = "refit.lambda_handler"
   type        = string
 }
 
-# ------------------ EC2 -----------------------------
 
-variable "ami_id" {
-  description = "id of an ami by default it's ubuntu 20.04"
-  type        = string
-  default     = "ami-06fd8a495a537da8b"
-}
-
-variable "instance_type" {
-  description = "aws ec2 instance type"
-  type        = string
-  default     = "t2.micro"
-}
-
-variable "tag_name" {
-  description = "Aws tag name permit to search an instance by tag"
-  type        = string
-  default     = "esme"
-}
-
-variable "aws_public_key_ssh_path" {
-  description = "The key name of the Key Pair to use for the instance"
+variable "function_name_empty_unknown_urls" {
+  description = "function name of the lambda"
+  default     = "empty_unknown_urls"
   type        = string
 }
 
-variable "aws_private_key_ssh_path" {
-  description = "The key name of the Key Pair to use for the instance"
+variable "function_name_capture" {
+  description = "function name of the lambda"
+  default     = "capture_stat_lambda"
   type        = string
 }
 
-variable "aws_keypair_name" {
-  type    = string
-  default = "admin"
+variable "function_name_ia" {
+  description = "function name of the lambda"
+  default     = "ia_lambda"
+  type        = string
 }
+
+variable "function_name_refit" {
+  description = "function name of the lambda"
+  default     = "ia_lambda"
+  type        = string
+}
+
+
