@@ -20,3 +20,8 @@ variable "function_name_empty_unknown_urls" {
   type        = string
 }
 
+variable "sqs_unknown_urls" {
+  description = "name of the sqs"
+  default     = "unknown_urls"
+  type        = string
+}

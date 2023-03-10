@@ -10,3 +10,5 @@ venv
 /terraform/.terraform.lock.hcl
 
 *.json
+
+*.zip
