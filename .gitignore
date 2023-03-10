@@ -20,3 +20,5 @@ ac_control_lambda/src/__pycache__/
 /.pytest_cache/
 
 login
+
+*.json
