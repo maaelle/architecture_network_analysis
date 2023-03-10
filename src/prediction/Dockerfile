@@ -5,7 +5,7 @@
 # Pull the base image with python 3.8 as a runtime for your Lambda
 FROM public.ecr.aws/lambda/python:3.9
 
-RUN yum check-update && yum update -y 
+RUN yum check-update && yum update -y
 
 RUN yum install make -y
 
