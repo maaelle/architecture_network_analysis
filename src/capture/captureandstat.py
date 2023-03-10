@@ -83,7 +83,7 @@ def send_JSON(Json):
     sqs = boto3.client('sqs')
     queue_url = 'SQS_QUEUE_URL'
     sqs.send_message(
-        QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/queue_ia_mm.fifo",
+        QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_ia.fifo",
         DelaySeconds=10,
         MessageBody=(Json)
     )
@@ -92,7 +92,7 @@ def lambda_handler(event):
     sqs = boto3.client('sqs')
     queue_url = 'SQS_QUEUE_URL'
     response = sqs.receive_message(
-        QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/queue_capture_mm.fifo",
+        QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_capture.fifo",
         AttributeNames=[
             'SentTimestamp'
         ],
@@ -112,6 +112,6 @@ def lambda_handler(event):
         Json = stat(filename)
         send_JSON(Json)
         sqs.delete_message(
-            QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/queue_capture_mm.fifo",
+            QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_capture.fifo",
             ReceiptHandle=message[i]['ReceiptHandle']
         )

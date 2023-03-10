@@ -1,0 +1,1 @@
+aws lambda update-function-code  --function-name empty_unknown_urls  --zip-file fileb://lambda_function_payload3.zip --region eu-west-1
