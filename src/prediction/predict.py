@@ -14,7 +14,6 @@ def recup_model():
     )
     return load_model(zipfile.ZipFile("/tmp/model_lstm.zip", "r"))
 
-
 def pred(x, model):
     scaler = StandardScaler()
     scaler.fit(x)
@@ -23,12 +22,20 @@ def pred(x, model):
     pred = model.predict(x_reshape)
     return np.argmax(pred)
 
+def send_message(prediction):
+    sqs = boto3.client('sqs')
+    sqs.send_message(
+        QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_pred.fifo",
+        DelaySeconds=10,
+        MessageBody=prediction
+    )
+
 
 def lambda_handler():
     # récuperer le message JSON
     sqs = boto3.client("sqs")
     response = sqs.receive_message(
-        QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/queue_ia_mm.fifo",
+        QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_pred.fifo",
         AttributeNames=["SentTimestamp"],
         MaxNumberOfMessages=1,
         MessageAttributeNames=["All"],
@@ -43,7 +50,8 @@ def lambda_handler():
         model = recup_model()
         # lancer la prediction
         prediction = pred(x, model)
+        send_message(prediction)
         sqs.delete_message(
-            QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/queue_ia_mm.fifo",
+            QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_ia.fifo",
             ReceiptHandle=message[i]["ReceiptHandle"],
         )
