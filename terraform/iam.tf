@@ -43,6 +43,34 @@ resource "aws_iam_role_policy" "iam_policy_for_s3" {
 EOF
 }
 
+# autorisation d'accès ECR for lambda ia
+resource "aws_iam_role_policy" "iam_policy_for_ecr" {
+  name = "lambda_ecr_policy"
+  role = aws_iam_role.lambda_ia_role.id
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                        "ecr:BatchGetImage",
+                        "ecr:BatchCheckLayerAvailability",
+                        "ecr:CompleteLayerUpload",
+                        "ecr:GetDownloadUrlForLayer",
+                        "ecr:InitiateLayerUpload",
+                        "ecr:PutImage",
+                        "ecr:UploadLayerPart"
+                      ],
+            "Resource": "arn:aws:ecr:eu-west-1:715437275066:repository/ecr_docker_lambda/*"
+        }
+    ]
+}
+EOF
+}
+
+
 
 # autorisation SQS ia for lambda ia
 data "aws_iam_policy_document" "sqs_ia_policy_doc" {

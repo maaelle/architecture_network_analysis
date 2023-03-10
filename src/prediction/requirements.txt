@@ -3,4 +3,4 @@ pandas
 numpy
 scikit-learn
 boto3
-zipfile
+zipfile36
