@@ -7,11 +7,10 @@ from pandas import json_normalize
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import load_model
 
-SQS_LINK_RECEIVED = "https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_pred.fifo"
+from constants import SQS_LINK_RECEIVED
 
 
-def recup_model():
-    s3 = boto3.resource("s3")
+def get_model(s3):
     s3.meta.client.download_file(
         "test-bucket-mmarcelin", "model_lstm.zip", "/tmp/model_lstm.zip"
     )
@@ -25,12 +24,11 @@ def scale(x):
     )
 
 
-def send_message(prediction):
-    sqs = boto3.client("sqs")
+def send_message(sqs, msg, link):
     sqs.send_message(
-        QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_pred.fifo",
+        QueueUrl=link,
         DelaySeconds=10,
-        MessageBody=prediction,
+        MessageBody=msg,
     )
 
 
@@ -66,7 +64,9 @@ def delete_all_msgs_from_queue(sqs, link, all_messages):
 
 
 def lambda_handler(event):
-    model = recup_model()
+    s3 = boto3.resource("s3")
+
+    model = get_model(s3)
 
     sqs = boto3.client("sqs")
 
