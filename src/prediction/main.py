@@ -101,3 +101,5 @@ def lambda_handler(event):
     push_all_accepted_pred(links_pred)
 
     delete_all_msgs_from_queue(sqs, SQS_LINK_RECEIVED, all_msgs)
+
+    return {"status_code": 200}
