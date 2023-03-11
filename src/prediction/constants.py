@@ -1,4 +1,4 @@
-LOGIN_MONGO_PATH = "login.json"
+LOGIN_MONGO_PATH = "mongo_login.json"
 
 MALICIOUS = "malicious_urls"
 ACCEPTED = "accepted_urls"

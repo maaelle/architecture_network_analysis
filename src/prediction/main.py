@@ -65,11 +65,9 @@ def delete_all_msgs_from_queue(sqs, link, all_messages):
 
 def lambda_handler(event):
     s3 = boto3.resource("s3")
-
     model = get_model(s3)
 
     sqs = boto3.client("sqs")
-
     all_msgs = get_all_msgs_from_queue(sqs, SQS_LINK_RECEIVED)
 
     x = preprocess_x(all_msgs)
