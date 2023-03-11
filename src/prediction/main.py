@@ -70,8 +70,11 @@ def delete_all_msgs_from_queue(sqs, link, all_messages):
 
 
 def push_all_kind_pred(links_pred, kind, collection):
-    kind_url = list(filter(lambda p: p == kind, links_pred))
-    return push_data_to_mongo_collections(collection, kind_url)
+    kind_url = list(filter(lambda p: p[1] in kind, links_pred))
+    preprocessed_kind = list(
+        map(lambda p: {"url": p[0], "kind": CORRESPONDENCES[p[1]]}, kind_url)
+    )
+    return push_data_to_mongo_collections(collection, preprocessed_kind)
 
 
 def push_all_malicious_pred(links_pred):

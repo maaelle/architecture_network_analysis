@@ -15,5 +15,5 @@ COPY ./ ./
 RUN make install
 
 # Set the CMD to your handler
-CMD ["predict.lambda_handler"]
+CMD ["main.lambda_handler"]
 
