@@ -5,3 +5,4 @@ scikit-learn
 boto3
 zipfile36
 ramda
+pymongo

@@ -9,7 +9,7 @@ RUN apt update && apt upgrade -y
 
 RUN apt install make
 
-COPY requirements.txt predict.py Makefile ./
+COPY ./ ./
 
 # Install the python requirements from requirements.txt
 RUN make install

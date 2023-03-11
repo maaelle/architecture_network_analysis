@@ -7,7 +7,7 @@ from pandas import json_normalize
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import load_model
 
-from constants import SQS_LINK_RECEIVED
+from constants import *
 from mongo import push_data_to_mongo_collections
 
 
@@ -69,10 +69,17 @@ def delete_all_msgs_from_queue(sqs, link, all_messages):
     return map(destructor, all_messages)
 
 
-def push_all_kind_pred(links_pred, kind):
-    # todo: voir ce que renvoient les pred
+def push_all_kind_pred(links_pred, kind, collection):
     kind_url = list(filter(lambda p: p == kind, links_pred))
-    return push_data_to_mongo_collections(kind, kind_url)
+    return push_data_to_mongo_collections(collection, kind_url)
+
+
+def push_all_malicious_pred(links_pred):
+    return push_all_kind_pred(links_pred, PRED_MALICIOUS, MALICIOUS_COLLECTION)
+
+
+def push_all_accepted_pred(links_pred):
+    return push_all_kind_pred(links_pred, PRED_ACCEPTED, ACCEPTED_COLLECTION)
 
 
 def lambda_handler(event):
@@ -87,5 +94,7 @@ def lambda_handler(event):
     pred = model.predict(x)
 
     links_pred = list(zip(links, pred))
+    push_all_malicious_pred(links_pred)
+    push_all_accepted_pred(links_pred)
 
     delete_all_msgs_from_queue(sqs, SQS_LINK_RECEIVED, all_msgs)
