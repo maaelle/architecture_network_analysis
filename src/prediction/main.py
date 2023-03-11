@@ -8,6 +8,7 @@ from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import load_model
 
 from constants import SQS_LINK_RECEIVED
+from mongo import push_data_to_mongo_collections
 
 
 def get_model(s3):
@@ -32,12 +33,17 @@ def send_message(sqs, msg, link):
     )
 
 
-def preprocess_x(x):
+def preprocess_x(messages):
     return R.pipe(
         R.pluck("Body"),
+        R.map(R.dissoc("url")),
         R.map(json_normalize),
         R.map(scale),
-    )(x)
+    )(messages)
+
+
+def get_all_links(messages):
+    return R.pipe(R.pluck("Body"), R.pluck("url"))(messages)
 
 
 def get_all_msgs_from_queue(sqs, link):
@@ -63,6 +69,12 @@ def delete_all_msgs_from_queue(sqs, link, all_messages):
     return map(destructor, all_messages)
 
 
+def push_all_kind_pred(links_pred, kind):
+    # todo: voir ce que renvoient les pred
+    kind_url = list(filter(lambda p: p == kind, links_pred))
+    return push_data_to_mongo_collections(kind, kind_url)
+
+
 def lambda_handler(event):
     s3 = boto3.resource("s3")
     model = get_model(s3)
@@ -71,6 +83,9 @@ def lambda_handler(event):
     all_msgs = get_all_msgs_from_queue(sqs, SQS_LINK_RECEIVED)
 
     x = preprocess_x(all_msgs)
+    links = get_all_links(all_msgs)
     pred = model.predict(x)
+
+    links_pred = list(zip(links, pred))
 
     delete_all_msgs_from_queue(sqs, SQS_LINK_RECEIVED, all_msgs)

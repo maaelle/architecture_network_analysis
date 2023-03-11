@@ -3,7 +3,7 @@ import os
 
 import pymongo
 
-from constants import LOGIN_MONGO_PATH, MALICIOUS
+from constants import LOGIN_MONGO_PATH
 
 
 def read_json(filename):
@@ -28,18 +28,10 @@ def get_mongo_client():
     return pymongo.MongoClient(f"mongodb+srv://{username}:{pwd}@{db}/?retryWrites=true")
 
 
-def get_all_kind_urls(kind):
-    return list(map(lambda obj: obj["url"], get_mongo_client()[kind].urls.find()))
-
-
-def get_all_malicious_urls():
-    return get_all_kind_urls(MALICIOUS)
-
-
 """
-DELETES
+PUSHERS
 """
 
 
-def delete_all_kind_urls(kind):
-    return get_mongo_client()[kind].urls.delete_many({})
+def push_data_to_mongo_collections(collection, data):
+    return get_mongo_client()[collection].insert_many(data)

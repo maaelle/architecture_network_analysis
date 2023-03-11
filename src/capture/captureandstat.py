@@ -62,22 +62,19 @@ def calculate_metrics(pkts):
 
 def get_url(url):
     i = 0
-    for i in range(10):  ## temps limité ici aussi: 10* 1.5s environ
+    for _ in range(10):
         time.sleep(1.5)
         r.get(url)
 
 
 def snif(url, interface, filename):
     IP_used = socket.gethostbyname(url)
-    pkts_sniffed = sniff(
-        filter="host " + IP_used, iface=interface, timeout=10
-    )  ## timeout 10 donc peut pas tourner plus
+    pkts_sniffed = sniff(filter=f"host {IP_used}", iface=interface, timeout=10)
     wrpcap(filename, pkts_sniffed)
 
 
 def capture(url, interface, filename):
     print("____ Start _____")
-    threads = []
     t = threading.Thread(target=get_url, args=(url,))
     m = threading.Thread(
         target=capture,
@@ -89,8 +86,7 @@ def capture(url, interface, filename):
     )
     t.start()
     m.start()
-    threads.append(t)
-    threads.append(m)
+    threads = [t, m]
     for thread in threads:
         thread.join()
 
