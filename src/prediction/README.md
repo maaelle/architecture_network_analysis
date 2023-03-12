@@ -10,26 +10,47 @@
 
 1. [How to deploy](#how-to-deploy)
 2. [AWS configuration](#aws-configuration)
-3. [Makefile](#makefile)
+   1. [IAM](#iam)
+   2. [ECR](#ecr)
+3. [MongoDB Configuration](#mongodb-configuration)
+4. [Makefile](#makefile)
     1. [Initialization of Makefile variables](#initialization-of-makefile-variables)
     2. [All commands available](#all-commands-available-in-the-makefile)
 
 
 ## How to deploy
 
-if you already have created the IAM user following this [AWS Configuration](#aws-configuration), you have to 
-[Initialize the Makefile](#initialization-of-makefile-variables), and then you can execute [make deploy](#make-deploy) 
-in your terminal.
+you need to respect the following conditions to deploy the app:
+- you have created an IAM user and an ECR following this [AWS Configuration](#aws-configuration)
+- you have created a `mongo_login.json` file following this [MongoDB Configuration](#mongodb-configuration)
 
-> **Note**
-> Be sure you have created the ECR repository with the same [image name](#imagename) before executing `make deploy`.
+if you respect this conditions, you can then execute [make deploy](#make-deploy)
+
 
 
 ## AWS Configuration
 
+### IAM
 you need to create an IAM user with this policy : `AmazonEC2ContainerRegistryFullAccess`
 
 Then you can type in the terminal `aws configure` and register to this user to continue.
+
+### ECR
+
+you need to create manually an ECR with the same [image name](#imagename) as the docker you have created.
+
+## MongoDB configuration
+
+you need to create a `login.json` file at the root of the directory reproducing this configuration:
+```json
+{
+  "username": "",
+  "password": "",
+  "db": ""
+}
+```
+
+then fill the necessary information to permit access to the database.
 
 
 ## Makefile
