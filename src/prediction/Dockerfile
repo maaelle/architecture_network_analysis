@@ -3,11 +3,11 @@
 
 
 # Pull the base image with python 3.8 as a runtime for your Lambda
-FROM public.ecr.aws/lambda/python:3.9
+FROM python:3.9
 
-RUN yum check-update && yum update -y
+RUN apt update && apt upgrade -y
 
-RUN yum install make -y
+RUN apt install make
 
 COPY requirements.txt predict.py Makefile ./
 
