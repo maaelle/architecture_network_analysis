@@ -6,7 +6,7 @@ resource "aws_lambda_function" "empty_unknown_urls" {
   handler       = var.handler_empty_unknown_urls
 
 
-  runtime = "python3.7"
+  runtime = "python3.8"
 }
 
 # aws_cloudwatch_event_rule scheduled action every minute
@@ -41,7 +41,7 @@ resource "aws_lambda_function" "capture_stat_lambda" {
   role          = aws_iam_role.lambda_capture_role.arn
   handler       = var.handler_capture
 
-  runtime = "python3.7"
+  runtime = "python3.8"
 
 }
 
@@ -54,13 +54,14 @@ resource "aws_lambda_event_source_mapping" "event_sqs_capture" {
 resource "aws_lambda_function" "ia_lambda" {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
-  filename      = "files/empty_package.zip"
+  #filename      = "files/empty_package.zip"
   function_name = var.function_name_ia
   role          = aws_iam_role.lambda_ia_role.arn
   handler       = var.handler_ia
-  #image_uri = "715437275066.dkr.ecr.eu-west-1.amazonaws.com/ecr_docker_lambda"
+  package_type  = "Image"
+  image_uri = "715437275066.dkr.ecr.eu-west-1.amazonaws.com/test_lambda:tag"
 
-  runtime = "python3.7"
+  runtime = "python3.8"
 
 }
 
@@ -79,7 +80,7 @@ resource "aws_lambda_function" "refit_lambda" {
   role          = aws_iam_role.refit_lambda_role.arn
   handler       = var.handler_refit
 
-  runtime = "python3.7"
+  runtime = "python3.8"
 
 }
 

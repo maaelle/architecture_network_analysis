@@ -22,12 +22,12 @@ def pred(x, model):
     pred = model.predict(x_reshape)
     return np.argmax(pred)
 
-def send_message(prediction):
+def send_message(url, prediction):
     sqs = boto3.client('sqs')
     sqs.send_message(
         QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_pred.fifo",
         DelaySeconds=10,
-        MessageBody=prediction
+        MessageBody={{"url":url},{"prediction" : prediction}}
     )
 
 
@@ -44,13 +44,14 @@ def lambda_handler():
     )
     message = response["Messages"]
     for i in range(len(message)):
-        data = message[i]["Body"]
+        url = message[i]["Body"]["url"]
+        data = message[i]["Body"]["json"]
         x = json_normalize(data["data"])
         # récupérer model sur S3
         model = recup_model()
         # lancer la prediction
         prediction = pred(x, model)
-        send_message(prediction)
+        send_message(url,prediction)
         sqs.delete_message(
             QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_ia.fifo",
             ReceiptHandle=message[i]["ReceiptHandle"],
