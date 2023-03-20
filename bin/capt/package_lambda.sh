@@ -1,5 +1,6 @@
 rm lambda_function_payload.zip
 mkdir lambda_package
+pip3 install lxml
 pip3 install -r src/capture/requirements.txt --target lambda_package
 cp src/capture/captureandstat.py lambda_package/captureandstat.py
 cd lambda_package

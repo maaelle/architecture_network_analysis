@@ -1,3 +1,8 @@
+
+###### need to add lambda basic function role for each lambda
+
+
+
 ########## Iam lambda unknown url
 resource "aws_iam_role" "unknown_urls_lambda_role" {
   name               = "unknown_urls_lambda_role"
