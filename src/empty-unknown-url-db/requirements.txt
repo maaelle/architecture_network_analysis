@@ -1,3 +1,4 @@
 mongo
 ramda
 boto3
+pymongo

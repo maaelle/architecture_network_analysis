@@ -1,1 +1,1 @@
-MODEL_PATH = "ai.sav"
+MODEL_PATH = "../capture/ai.sav"
