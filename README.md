@@ -94,14 +94,19 @@ the final part fill the mongo database with url depending if the url is maliciou
 ## Installation
 
 First, you need to clone this git by typing in the terminal
-`git clone https://github.com/maaelle/architecture_network_analysis.git`
+`git clone https://github.com/maaelle/architecture_network_analysis.git` and create a new IAM profile with
+these policies:
+- IAMFullAccess
+- AWSLambda_FullAccess
+- AmazonSQSFullAccess
+- AmazonS3FullAccess
+- AmazonEventBridgeFullAccess
+- AmazonCloudWatchRUMFullAccess
+- AmazonCloudWatchEvidentlyFullAccess
 
 Then, you have to register to AWS CLI, so type in the terminal `aws configure` and put your IAM key.
 
 Once you finished to register to AWS CLI, you can type in the terminal `terraform init` and then `terraform apply`
-
-> **Warning**
-> don't use `terraform apply` for now because it's not finished
 
 ## How did we design our architecture?
 > **Note**

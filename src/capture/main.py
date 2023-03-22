@@ -28,13 +28,13 @@ def calculate_metrics(pkts):
             bwd_packet_lengths.append(int(pkt.length))
             bwd_header_length += int(pkt.tcp.options.size)
 
-        if 'TCP' in pkt:
-            if 'MPTCP' in pkt:
+        if "TCP" in pkt:
+            if "MPTCP" in pkt:
                 subflow_key = f"{pkt['IP'].src}:{pkt['TCP'].sport}-{pkt['IP'].dst}:{pkt['TCP'].dport}"
                 if subflow_key not in subflows:
-                    subflows[subflow_key] = pkt['TCP'].seq
+                    subflows[subflow_key] = pkt["TCP"].seq
                 else:
-                    subflows[subflow_key] = max(subflows[subflow_key], pkt['TCP'].seq)
+                    subflows[subflow_key] = max(subflows[subflow_key], pkt["TCP"].seq)
 
         # Add the time of the packet to the list of times
         times.append(pkt.sniff_time.timestamp())
@@ -43,8 +43,7 @@ def calculate_metrics(pkts):
     fwd_packet_length_variance = statistics.variance(fwd_packet_lengths)
     bwd_packet_length_variance = statistics.variance(bwd_packet_lengths)
 
-    subflow_fwd_bytes=sum(subflows.values())
-
+    subflow_fwd_bytes = sum(subflows.values())
 
     # Calculate the backward packets per second
     bwd_packets_per_second = len(bwd_packet_lengths) / (times[-1] - times[0])
@@ -56,24 +55,47 @@ def calculate_metrics(pkts):
     # Calculate the backward packet length standard deviation
     bwd_packet_length_std = statistics.stdev(bwd_packet_lengths)
 
-    return init_win_bytes_forward, dest_port,total_length_of_fwd_packets, bwd_header_length, subflow_fwd_bytes, fwd_packet_length_variance, bwd_packet_length_variance, bwd_packets_per_second, average_packet_size, bwd_packet_length_std
+    return (
+        init_win_bytes_forward,
+        dest_port,
+        total_length_of_fwd_packets,
+        bwd_header_length,
+        subflow_fwd_bytes,
+        fwd_packet_length_variance,
+        bwd_packet_length_variance,
+        bwd_packets_per_second,
+        average_packet_size,
+        bwd_packet_length_std,
+    )
+
 
 def get_url(url):
     i = 0
-    for i in range (10): ## temps limité ici aussi: 10* 1.5s environ
+    for i in range(10):  ## temps limité ici aussi: 10* 1.5s environ
         time.sleep(1.5)
         r.get(url)
 
+
 def snif(url, interface, filename):
     IP_used = socket.gethostbyname(url)
-    pkts_sniffed = sniff(filter='host ' + IP_used, iface=interface, timeout=10) ## timeout 10 donc peut pas tourner plus
+    pkts_sniffed = sniff(
+        filter="host " + IP_used, iface=interface, timeout=10
+    )  ## timeout 10 donc peut pas tourner plus
     wrpcap(filename, pkts_sniffed)
+
 
 def capture(url, interface, filename):
     print("____ Start _____")
     threads = []
     t = threading.Thread(target=get_url, args=(url,))
-    m = threading.Thread(target=capture, args=(url, interface, filename,))
+    m = threading.Thread(
+        target=capture,
+        args=(
+            url,
+            interface,
+            filename,
+        ),
+    )
     t.start()
     m.start()
     threads.append(t)
@@ -82,35 +104,58 @@ def capture(url, interface, filename):
         thread.join()
 
 
-
 def stat(filename):
     cap = pyshark.FileCapture(filename)
-    init_win_bytes_forward, dest_port, total_length_of_fwd_packets, bwd_header_length, subflow_fwd_bytes, fwd_packet_length_variance, bwd_packet_length_variance, bwd_packets_per_second, average_packet_size, bwd_packet_length_std = calculate_metrics(cap)
-    statistics = {"data":[{"Init_Win_bytes_forward": str(init_win_bytes_forward), "Total Length of Fwd Packets": str(total_length_of_fwd_packets),"Bwd Header Length": str(bwd_header_length) , "Destination Port": str(dest_port),"Subflow Fwd Bytes": str(subflow_fwd_bytes), "Packet Length Std": str(fwd_packet_length_variance),"Packet Length Variance": str(bwd_packet_length_variance),"Bwd Packets/s": str(bwd_packets_per_second),"Average Packet Size": str(average_packet_size), "Bwd Packet Length Std": str(bwd_packet_length_std)}]}
+    (
+        init_win_bytes_forward,
+        dest_port,
+        total_length_of_fwd_packets,
+        bwd_header_length,
+        subflow_fwd_bytes,
+        fwd_packet_length_variance,
+        bwd_packet_length_variance,
+        bwd_packets_per_second,
+        average_packet_size,
+        bwd_packet_length_std,
+    ) = calculate_metrics(cap)
+    statistics = {
+        "data": [
+            {
+                "Init_Win_bytes_forward": str(init_win_bytes_forward),
+                "Total Length of Fwd Packets": str(total_length_of_fwd_packets),
+                "Bwd Header Length": str(bwd_header_length),
+                "Destination Port": str(dest_port),
+                "Subflow Fwd Bytes": str(subflow_fwd_bytes),
+                "Packet Length Std": str(fwd_packet_length_variance),
+                "Packet Length Variance": str(bwd_packet_length_variance),
+                "Bwd Packets/s": str(bwd_packets_per_second),
+                "Average Packet Size": str(average_packet_size),
+                "Bwd Packet Length Std": str(bwd_packet_length_std),
+            }
+        ]
+    }
     return statistics
 
+
 def send_JSON(url, Json):
-    sqs = boto3.client('sqs')
-    queue_url = 'SQS_QUEUE_URL'
+    sqs = boto3.client("sqs")
+    queue_url = "SQS_QUEUE_URL"
     sqs.send_message(
         QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_ia.fifo",
         DelaySeconds=10,
-        MessageBody={{"url": url},{"json" : Json}}
+        MessageBody={{"url": url}, {"json": Json}},
     )
 
+
 def lambda_handler(event):
-    sqs = boto3.client('sqs')
+    sqs = boto3.client("sqs")
     response = sqs.receive_message(
         QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_capture.fifo",
-        AttributeNames=[
-            'SentTimestamp'
-        ],
+        AttributeNames=["SentTimestamp"],
         MaxNumberOfMessages=1,
-        MessageAttributeNames=[
-            'All'
-        ],
+        MessageAttributeNames=["All"],
         VisibilityTimeout=0,
-        WaitTimeSeconds=0
+        WaitTimeSeconds=0,
     )
     message = response["Messages"]
     i = 0
@@ -119,28 +164,22 @@ def lambda_handler(event):
         filename = "Capture.pcapng"
         capture(URL, "en0", filename)
         Json = stat(filename)
-        send_JSON(URL,Json)
+        send_JSON(URL, Json)
         sqs.delete_message(
             QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_capture.fifo",
-            ReceiptHandle=message[i]['ReceiptHandle']
+            ReceiptHandle=message[i]["ReceiptHandle"],
         )
 
 
-
-
-if __name__ == '__main__':
-    sqs = boto3.client('sqs')
+if __name__ == "__main__":
+    sqs = boto3.client("sqs")
     response = sqs.receive_message(
         QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_capture.fifo",
-        AttributeNames=[
-            'SentTimestamp'
-        ],
+        AttributeNames=["SentTimestamp"],
         MaxNumberOfMessages=1,
-        MessageAttributeNames=[
-            'All'
-        ],
+        MessageAttributeNames=["All"],
         VisibilityTimeout=0,
-        WaitTimeSeconds=0
+        WaitTimeSeconds=0,
     )
     message = response["Messages"]
     i = 0
@@ -149,8 +188,8 @@ if __name__ == '__main__':
         filename = "Capture.pcapng"
         capture(URL, "en0", filename)
         Json = stat(filename)
-        send_JSON(URL,Json)
+        send_JSON(URL, Json)
         sqs.delete_message(
             QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_capture.fifo",
-            ReceiptHandle=message[i]['ReceiptHandle']
+            ReceiptHandle=message[i]["ReceiptHandle"],
         )

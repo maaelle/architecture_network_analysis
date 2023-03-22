@@ -22,3 +22,5 @@ ac_control_lambda/src/__pycache__/
 login
 
 *.json
+
+*.zip

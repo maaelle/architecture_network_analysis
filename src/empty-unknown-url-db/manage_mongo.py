@@ -1,12 +1,13 @@
 import json
 import os
 
-import pymongo
+from pymongo import MongoClient
+from pymongo.results import DeleteResult
 
 from constants import LOGIN_MONGO_PATH, MALICIOUS, UNKNOWN
 
 
-def read_json(filename):
+def read_json(filename: str):
     if os.path.exists(filename):
         with open(filename, "r") as f:
             return json.load(f)
@@ -25,7 +26,7 @@ def get_login():
 
 def get_mongo_client():
     username, pwd, db = get_login()
-    return pymongo.MongoClient(f"mongodb+srv://{username}:{pwd}@{db}/?retryWrites=true")
+    return MongoClient(f"mongodb+srv://{username}:{pwd}@{db}/?retryWrites=true")
 
 
 def get_all_kind_urls(kind):
@@ -45,9 +46,9 @@ DELETES
 """
 
 
-def delete_all_kind_urls(kind):
+def delete_all_kind_urls(kind: str):
     return get_mongo_client()[kind].urls.delete_many({})
 
 
-def delete_all_unknown_urls():
+def delete_all_unknown_urls() -> DeleteResult:
     return delete_all_kind_urls(UNKNOWN)
