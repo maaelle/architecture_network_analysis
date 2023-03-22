@@ -39,9 +39,27 @@ def generate_messages(list_of_values):
                 "MessageBody": json.dumps,
                 "MessageGroupId": lambda x: message_group_id,
                 "MessageDeduplicationId": generate_key,
-                "MessageAttributes": lambda x: {
-                    "from": {"StringValue": "url", "DataType": "String"}
-                },
             }
         )
     )(list_of_values)
+
+
+def receive_all_messages(queue_url):
+    sqs = boto3.client("sqs")
+    messages = []
+    while True:
+        response = sqs.receive_message(
+            QueueUrl=queue_url,
+            AttributeNames=["All"],
+            MaxNumberOfMessages=10,
+            VisibilityTimeout=0,
+            WaitTimeSeconds=0,
+        )
+        if "Messages" not in response:
+            break
+        for message in response["Messages"]:
+            messages.append(message)
+            sqs.delete_message(
+                QueueUrl=queue_url, ReceiptHandle=message["ReceiptHandle"]
+            )
+    return messages

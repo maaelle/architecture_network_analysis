@@ -1,195 +1,92 @@
-import pyshark
-import statistics
-from scapy.all import *
+import contextlib
+
 import boto3
+import pyshark
+import ramda as R
 import requests as r
+from scapy.all import *
 
-
-def calculate_metrics(pkts):
-    # Initialize variables to keep track of the packet lengths and times
-    fwd_packet_lengths = []
-    bwd_packet_lengths = []
-    times = []
-    init_win_bytes_forward = 0
-    total_length_of_fwd_packets = 0
-    bwd_header_length = 0
-    subflow_fwd_bytes = 0
-    subflows = {}
-
-    # Loop through each packet in the capture
-    for pkt in pkts:
-        dest_port = pkt.tcp.dstport
-        # Check if the packet is a forward or backward packet
-        if pkt.ip.src < pkt.ip.dst:
-            fwd_packet_lengths.append(int(pkt.length))
-            total_length_of_fwd_packets += int(pkt.length)
-            init_win_bytes_forward = int(pkt.tcp.window_size_value)
-        else:
-            bwd_packet_lengths.append(int(pkt.length))
-            bwd_header_length += int(pkt.tcp.options.size)
-
-        if "TCP" in pkt:
-            if "MPTCP" in pkt:
-                subflow_key = f"{pkt['IP'].src}:{pkt['TCP'].sport}-{pkt['IP'].dst}:{pkt['TCP'].dport}"
-                if subflow_key not in subflows:
-                    subflows[subflow_key] = pkt["TCP"].seq
-                else:
-                    subflows[subflow_key] = max(subflows[subflow_key], pkt["TCP"].seq)
-
-        # Add the time of the packet to the list of times
-        times.append(pkt.sniff_time.timestamp())
-
-    # Calculate the packet length variance
-    fwd_packet_length_variance = statistics.variance(fwd_packet_lengths)
-    bwd_packet_length_variance = statistics.variance(bwd_packet_lengths)
-
-    subflow_fwd_bytes = sum(subflows.values())
-
-    # Calculate the backward packets per second
-    bwd_packets_per_second = len(bwd_packet_lengths) / (times[-1] - times[0])
-
-    # Calculate the average packet size
-    total_packet_lengths = fwd_packet_lengths + bwd_packet_lengths
-    average_packet_size = sum(total_packet_lengths) / len(total_packet_lengths)
-
-    # Calculate the backward packet length standard deviation
-    bwd_packet_length_std = statistics.stdev(bwd_packet_lengths)
-
-    return (
-        init_win_bytes_forward,
-        dest_port,
-        total_length_of_fwd_packets,
-        bwd_header_length,
-        subflow_fwd_bytes,
-        fwd_packet_length_variance,
-        bwd_packet_length_variance,
-        bwd_packets_per_second,
-        average_packet_size,
-        bwd_packet_length_std,
-    )
+from constants import SQS_AI, SQS_UNKNOWN_URL, SQS_ENDPOINT
+from manage_network import calculate_metrics
+from src.capture.manage_sqs import create_sqs_client
 
 
 def get_url(url):
-    i = 0
-    for i in range(10):  ## temps limité ici aussi: 10* 1.5s environ
+    for _ in range(10):
         time.sleep(1.5)
-        r.get(url)
-
-
-def snif(url, interface, filename):
-    IP_used = socket.gethostbyname(url)
-    pkts_sniffed = sniff(
-        filter="host " + IP_used, iface=interface, timeout=10
-    )  ## timeout 10 donc peut pas tourner plus
-    wrpcap(filename, pkts_sniffed)
+        with contextlib.suppress(Exception):
+            r.get(url)
 
 
 def capture(url, interface, filename):
-    print("____ Start _____")
-    threads = []
-    t = threading.Thread(target=get_url, args=(url,))
-    m = threading.Thread(
-        target=capture,
-        args=(
-            url,
-            interface,
-            filename,
-        ),
-    )
-    t.start()
-    m.start()
-    threads.append(t)
-    threads.append(m)
-    for thread in threads:
-        thread.join()
+    threads = [
+        Thread(target=get_url, args=(url)),
+        Thread(target=capture, args=(url, interface, filename)),
+    ]
+    map(lambda t: t.start(), threads)
+    map(lambda t: t.join(), threads)
 
 
 def stat(filename):
-    cap = pyshark.FileCapture(filename)
-    (
-        init_win_bytes_forward,
-        dest_port,
-        total_length_of_fwd_packets,
-        bwd_header_length,
-        subflow_fwd_bytes,
-        fwd_packet_length_variance,
-        bwd_packet_length_variance,
-        bwd_packets_per_second,
-        average_packet_size,
-        bwd_packet_length_std,
-    ) = calculate_metrics(cap)
-    statistics = {
-        "data": [
+    return R.pipe(
+        pyshark.FileCapture,
+        calculate_metrics,
+        R.apply_spec(
             {
-                "Init_Win_bytes_forward": str(init_win_bytes_forward),
-                "Total Length of Fwd Packets": str(total_length_of_fwd_packets),
-                "Bwd Header Length": str(bwd_header_length),
-                "Destination Port": str(dest_port),
-                "Subflow Fwd Bytes": str(subflow_fwd_bytes),
-                "Packet Length Std": str(fwd_packet_length_variance),
-                "Packet Length Variance": str(bwd_packet_length_variance),
-                "Bwd Packets/s": str(bwd_packets_per_second),
-                "Average Packet Size": str(average_packet_size),
-                "Bwd Packet Length Std": str(bwd_packet_length_std),
+                "Init_Win_bytes_forward": R.pipe(R.nth(0), str),
+                "Total Length of Fwd Packets": R.pipe(R.nth(2), str),
+                "Bwd Header Length": R.pipe(R.nth(3), str),
+                "Destination Port": R.pipe(R.nth(1), str),
+                "Subflow Fwd Bytes": R.pipe(R.nth(4), str),
+                "Packet Length Std": R.pipe(R.nth(5), str),
+                "Packet Length Variance": R.pipe(R.nth(6), str),
+                "Bwd Packets/s": R.pipe(R.nth(7), str),
+                "Average Packet Size": R.pipe(R.nth(8), str),
+                "Bwd Packet Length Std": R.pipe(R.nth(9), str),
             }
-        ]
-    }
-    return statistics
+        ),
+        R.apply_spec({"data": R.identity}),
+    )(filename)
 
 
 def send_JSON(url, Json):
     sqs = boto3.client("sqs")
-    queue_url = "SQS_QUEUE_URL"
     sqs.send_message(
-        QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_ia.fifo",
+        QueueUrl=SQS_AI,
         DelaySeconds=10,
         MessageBody={{"url": url}, {"json": Json}},
     )
 
 
-def lambda_handler(event):
-    sqs = boto3.client("sqs")
-    response = sqs.receive_message(
-        QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_capture.fifo",
-        AttributeNames=["SentTimestamp"],
-        MaxNumberOfMessages=1,
-        MessageAttributeNames=["All"],
-        VisibilityTimeout=0,
-        WaitTimeSeconds=0,
-    )
-    message = response["Messages"]
-    i = 0
-    for i in range(len(message)):
-        URL = message[i]["Body"]
-        filename = "Capture.pcapng"
-        capture(URL, "en0", filename)
-        Json = stat(filename)
-        send_JSON(URL, Json)
-        sqs.delete_message(
-            QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_capture.fifo",
-            ReceiptHandle=message[i]["ReceiptHandle"],
+def lambda_handler(event, lambda_context):
+    filename = "Capture.pcapng"
+    sqs = create_sqs_client(SQS_ENDPOINT)
+    while True:
+        # voir s'il n'y a pas un autre moyen pour récupéreer tous les msgs du sqs
+        # pour se débarrassr de la boucle
+        response = sqs.receive_message(
+            QueueUrl=SQS_UNKNOWN_URL,
+            MessageAttributeNames=["url"],
+            AttributeNames=["url"],
+            MaxNumberOfMessages=10,
+            WaitTimeSeconds=1,
         )
+        if "Messages" not in response:
+            continue
+
+        for msg in response["Messages"]:
+            url = msg["Body"]
+            print(url)
+            # capture(url, "en0", filename)
+            # data = stat(filename)
+            # todo: send data & url to sqs ai
+
+            # todo: uncomment this line below once you've finished the capture
+            # sqs.delete_message(
+            #     QueueUrl=SQS_UNKNOWN_URL,
+            #     ReceiptHandle=msg["ReceiptHandle"],
+            # )
 
 
 if __name__ == "__main__":
-    sqs = boto3.client("sqs")
-    response = sqs.receive_message(
-        QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_capture.fifo",
-        AttributeNames=["SentTimestamp"],
-        MaxNumberOfMessages=1,
-        MessageAttributeNames=["All"],
-        VisibilityTimeout=0,
-        WaitTimeSeconds=0,
-    )
-    message = response["Messages"]
-    i = 0
-    for i in range(len(message)):
-        URL = message[i]["Body"]
-        filename = "Capture.pcapng"
-        capture(URL, "en0", filename)
-        Json = stat(filename)
-        send_JSON(URL, Json)
-        sqs.delete_message(
-            QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_capture.fifo",
-            ReceiptHandle=message[i]["ReceiptHandle"],
-        )
+    lambda_handler("", "")

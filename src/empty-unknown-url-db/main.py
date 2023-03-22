@@ -2,27 +2,9 @@ import json
 
 import ramda as R
 
-from constants import SQS_ENDPOINT, SQS
+from constants import SQS_ENDPOINT, SQS_UNKNOWN_URL
 from manage_mongo import get_all_unknown_urls, delete_all_unknown_urls
-from manage_sqs import create_sqs_client, send_message_batch
-
-
-def generate_key(list_or_str):
-    return R.pipe(len, id, str)(list_or_str)
-
-
-def generate_messages(list_of_values):
-    message_group_id = generate_key(list_of_values)
-    return R.map(
-        R.apply_spec(
-            {
-                "Id": generate_key,
-                "MessageBody": json.dumps,
-                "MessageGroupId": lambda x: message_group_id,
-                "MessageDeduplicationId": generate_key,
-            }
-        )
-    )(list_of_values)
+from manage_sqs import create_sqs_client, send_message_batch, generate_messages
 
 
 def send_unknown_to_sqs(sqs):
@@ -30,7 +12,7 @@ def send_unknown_to_sqs(sqs):
         get_all_unknown_urls,
         R.uniq_by(R.prop("url")),
         generate_messages,
-        send_message_batch(sqs, SQS),
+        send_message_batch(sqs, SQS_UNKNOWN_URL),
     )()
 
 
@@ -42,3 +24,7 @@ def lambda_handler(event, lambda_context):
         "statusCode": 200,
         "sqs_response": json.dumps(sqs_response),
     }
+
+
+if __name__ == "__main__":
+    lambda_handler("", "")
