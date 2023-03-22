@@ -14,6 +14,7 @@ def recup_model():
     )
     return load_model(zipfile.ZipFile("/tmp/model_lstm.zip", "r"))
 
+
 def pred(x, model):
     scaler = StandardScaler()
     scaler.fit(x)
@@ -22,12 +23,13 @@ def pred(x, model):
     pred = model.predict(x_reshape)
     return np.argmax(pred)
 
+
 def send_message(url, prediction):
-    sqs = boto3.client('sqs')
+    sqs = boto3.client("sqs")
     sqs.send_message(
         QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_pred.fifo",
         DelaySeconds=10,
-        MessageBody={{"url":url},{"prediction" : prediction}}
+        MessageBody={{"url": url}, {"prediction-keras": prediction}},
     )
 
 
@@ -49,9 +51,9 @@ def lambda_handler():
         x = json_normalize(data["data"])
         # récupérer model sur S3
         model = recup_model()
-        # lancer la prediction
+        # lancer la prediction-keras
         prediction = pred(x, model)
-        send_message(url,prediction)
+        send_message(url, prediction)
         sqs.delete_message(
             QueueUrl="https://sqs.eu-west-1.amazonaws.com/715437275066/sqs_ia.fifo",
             ReceiptHandle=message[i]["ReceiptHandle"],

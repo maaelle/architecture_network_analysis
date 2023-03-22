@@ -1,34 +1,30 @@
-from collections import Counter
+import json
 
-import boto3
 import ramda as R
 
-from constants import SQS, SQS_DELAY
-from mongo import get_all_unknown_urls, delete_all_unknown_urls
+from constants import SQS_ENDPOINT, SQS_UNKNOWN_URL
+from manage_mongo import get_all_unknown_urls, delete_all_unknown_urls
+from manage_sqs import create_sqs_client, send_message_batch, generate_messages
 
 
-def unique_urls(list_of_urls):
-    return list(Counter(list_of_urls).keys())
-
-
-def send_sqs(sqs):
-    return lambda url: sqs.send_message(
-        QueueUrl=SQS,
-        DelaySeconds=SQS_DELAY,
-        MessageBody=url,
-    )
-
-
-def send_all_urls_to_sqs(sqs):
-    return lambda list_of_urls: map(send_sqs(sqs), list_of_urls)
-
-
-def lambda_handler(event):
-    sqs = boto3.client("sqs")
-    R.pipe(
+def send_unknown_to_sqs(sqs):
+    return R.pipe(
         get_all_unknown_urls,
-        unique_urls,
-        send_all_urls_to_sqs(sqs),
-        delete_all_unknown_urls,
-    )
-    return {"statusCode": 200}
+        R.uniq_by(R.prop("url")),
+        generate_messages,
+        send_message_batch(sqs, SQS_UNKNOWN_URL),
+    )()
+
+
+def lambda_handler(event, lambda_context):
+    sqs = create_sqs_client(SQS_ENDPOINT)
+    sqs_response = send_unknown_to_sqs(sqs)
+    delete_all_unknown_urls()
+    return {
+        "statusCode": 200,
+        "sqs_response": json.dumps(sqs_response),
+    }
+
+
+if __name__ == "__main__":
+    lambda_handler("", "")

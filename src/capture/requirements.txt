@@ -3,3 +3,5 @@ statistics
 scapy
 boto3
 requests
+lxml
+ramda

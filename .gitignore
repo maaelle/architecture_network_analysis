@@ -12,7 +12,7 @@ venv
 /terraform/.terraform.lock.hcl
 /venv/
 /files/
-!terraform/files/empty_package.zip
+!terraform/aws/files/empty_package.zip
 /terraform/.terraform/
 /.idea/
 /lambda_function_payload.zip
@@ -22,3 +22,5 @@ ac_control_lambda/src/__pycache__/
 login
 
 *.json
+
+*.zip

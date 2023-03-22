@@ -26,8 +26,8 @@ EOF
 
 data "aws_iam_policy_document" "sqs_capture_policy_doc" {
   statement {
-    sid       = "456456"
-    actions   = [
+    sid = "456456"
+    actions = [
       "sqs:ReceiveMessage",
       "sqs:DeleteMessage",
       "sqs:GetQueueAttributes",
@@ -54,8 +54,7 @@ resource "aws_iam_role_policy_attachment" "attachment_capture_send" {
 ######### iam lambda capture
 
 resource "aws_iam_role" "lambda_capture_role" {
-  name = "lambda_capture_role"
-
+  name               = "lambda_capture_role"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -86,8 +85,8 @@ resource "aws_iam_role_policy_attachment" "attachment_capture_receive" {
 
 data "aws_iam_policy_document" "sqs_capture_ia_policy_doc" {
   statement {
-    sid       = "789789"
-    actions   = [
+    sid = "789789"
+    actions = [
       "sqs:ReceiveMessage",
       "sqs:DeleteMessage",
       "sqs:GetQueueAttributes",
@@ -187,8 +186,8 @@ EOF
 # autorisation SQS ia for lambda ia
 data "aws_iam_policy_document" "sqs_ia_policy_doc" {
   statement {
-    sid       = "123123"
-    actions   = [
+    sid = "123123"
+    actions = [
       "sqs:ReceiveMessage",
       "sqs:DeleteMessage",
       "sqs:GetQueueAttributes",
@@ -214,8 +213,8 @@ resource "aws_iam_role_policy_attachment" "attachment_ia" {
 
 data "aws_iam_policy_document" "sqs_pred_policy_doc" {
   statement {
-    sid       = "12121212"
-    actions   = [
+    sid = "12121212"
+    actions = [
       "sqs:ReceiveMessage",
       "sqs:DeleteMessage",
       "sqs:GetQueueAttributes",
@@ -237,51 +236,3 @@ resource "aws_iam_role_policy_attachment" "attachment_pred" {
   policy_arn = aws_iam_policy.sqs_capture_pred_policy.arn
 }
 
-
-###### Iam refit lambda
-/*
-resource "aws_iam_role" "refit_lambda_role" {
-  name               = "refit_lambda_role"
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "lambda.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
-    }
-  ]
-}
-EOF
-}
-
-data "aws_iam_policy_document" "sqs_pred_refit_policy_doc" {
-  statement {
-    sid       = "3434343434"
-    actions   = [
-      "sqs:ReceiveMessage",
-      "sqs:DeleteMessage",
-      "sqs:GetQueueAttributes",
-      "sqs:SendMessage"
-    ]
-    resources = [
-      aws_sqs_queue.sqs_pred.arn
-    ]
-  }
-}
-
-resource "aws_iam_policy" "sqs_capture_pred_refit_policy" {
-  name   = "sqs_capture_pred_refit_policy"
-  policy = data.aws_iam_policy_document.sqs_pred_refit_policy_doc.json
-}
-
-resource "aws_iam_role_policy_attachment" "attachment_pred_refit" {
-  role       = aws_iam_role.lambda_refit_role.name
-  policy_arn = aws_iam_policy.sqs_capture_pred_refit_policy.arn
-}
-
-*/

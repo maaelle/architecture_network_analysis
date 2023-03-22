@@ -1,8 +1,8 @@
 rm lambda_function_payload_ai.zip
-mkdir /tmp/lambda_package
-pip3 install -r src/prediction/requirements.txt --target /tmp/lambda_package
-cp src/prediction/predict.py /tmp/lambda_package/predict.py
-cd /tmp/lambda_package
+mkdir lambda_package
+cp src/prediction-scikit/* lambda_package/
+cd lambda_package
+pip3 install -r requirements.txt --target .
 zip -r ../lambda_function_payload_ai.zip *
 cd ..
-rm -rf /tmp/lambda_package
+rm -rf lambda_package
