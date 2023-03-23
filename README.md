@@ -37,8 +37,7 @@ DB3[(accepted_url)]
 
 L1(empty unkown URL db)
 L2(catch TCP/UDP packet)
-L3(predict the kind of app)
-L4(refit the AI and fill db)
+L3(predict the kind of app and fill db)
 
 USER --> |localhost:53| CLI
 
@@ -46,11 +45,11 @@ CLI --> |url| DB1
 CLI <--> |url| DB2
 L1 <--> |url| DB1
 
-L4 --> |url| DB2
-L4 --> |url| DB3
+L3 --> |url| DB2
+L3 --> |url| DB3
 
 subgraph cloud 
-    L1 --> |url| L2 --> |url & tcp packet| L3 --> |url & tcp & kind| L4
+    L1 --> |url| L2 --> |url & tcp packet| L3 
 end
 
 subgraph mongo
@@ -66,7 +65,6 @@ style DB3 fill:#92D050,color:black,stroke:black
 style L1 fill:#D86613,color:white,stroke:#D86613
 style L2 fill:#D86613,color:white,stroke:#D86613
 style L3 fill:#D86613,color:white,stroke:#D86613
-style L4 fill:#D86613,color:white,stroke:#D86613
 
 style CLI fill:blue,color:white,stroke:blue
 
@@ -96,14 +94,19 @@ the final part fill the mongo database with url depending if the url is maliciou
 ## Installation
 
 First, you need to clone this git by typing in the terminal
-`git clone https://github.com/maaelle/architecture_network_analysis.git`
+`git clone https://github.com/maaelle/architecture_network_analysis.git` and create a new IAM profile with
+these policies:
+- IAMFullAccess
+- AWSLambda_FullAccess
+- AmazonSQSFullAccess
+- AmazonS3FullAccess
+- AmazonEventBridgeFullAccess
+- AmazonCloudWatchRUMFullAccess
+- AmazonCloudWatchEvidentlyFullAccess
 
 Then, you have to register to AWS CLI, so type in the terminal `aws configure` and put your IAM key.
 
 Once you finished to register to AWS CLI, you can type in the terminal `terraform init` and then `terraform apply`
-
-> **Warning**
-> don't use `terraform apply` for now because it's not finished
 
 ## How did we design our architecture?
 > **Note**
