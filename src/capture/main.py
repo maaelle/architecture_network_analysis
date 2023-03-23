@@ -186,7 +186,7 @@ def lambda_handler(event, lambda_context):
             with contextlib.suppress(Exception):
                 url = msg["Body"][1:-1]
                 print(url)
-                capture(url, "Wi-Fi", filename)
+                capture(url, "eth0", filename)
                 x = get_x(filename)
                 model = load_model("ai.sav")
                 prediction = PREDICTION_KIND[str(model.predict(x)[0])]

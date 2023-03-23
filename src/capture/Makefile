@@ -4,17 +4,18 @@
 # constants to change
 REGION=eu-west-1
 AWS_ACCOUNT_ID:=$(shell cat aws_account_id.json)
-IMAGE_NAME=predict_refit_malicious_tcp_ai
+IMAGE_NAME=capture_and_pred
 VERSION=latest
 
 # no need to change
 ECR_LINK =$(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com/$(IMAGE_NAME)
 
 install_libs:
-	apt install wireshark nmap -y
+	echo "wireshark-common wireshark-common/install-setuid boolean true" | debconf-set-selections
+	apt install -y --force-yes wireshark nmap
 
 install_deps:
-	pip3 -r requirements.txt
+	python3 -m pip install -r requirements.txt
 
 
 install:
